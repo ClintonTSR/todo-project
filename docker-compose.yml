@@ -1,0 +1,43 @@
+version: '3.9'
+
+services:
+  postgres:
+    image: postgres:15.2-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: postgres
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    ports:
+      - '5432:5432'
+
+  api:
+    build:
+      context: ./todo-node-server
+      dockerfile: ./Dockerfile.dev
+    depends_on:
+      postgres:
+        condition: service_started
+    environment:
+        NODE_ENV: development
+        DB_HOST: postgres
+        DB_PORT: 5432
+        DB_USERNAME: postgres
+        DB_PASSWORD: password
+        DB_DATABASE: postgres
+        CLIENT_PORT: 3000
+    ports:
+      - '8080:8080'
+
+  app:
+    build:
+      context: ./react-todo-app
+      dockerfile: ./Dockerfile.dev
+    ports:
+      - '3000:3000'
+
+volumes:
+  postgres-data:
+  rabbitmq-data:
